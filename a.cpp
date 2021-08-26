@@ -71,18 +71,43 @@ double3 triangle_normal(const double3* points, int opposite){
     return result;
 }
 
+/// 
+double tetrahedron_volume(const double3* points)
+{
+    // Check that we get a tetrahedr
+    // Get the coordinates of the four vertices
+    const double* x0 = (double*)&(points[0]);
+    const double* x1 = (double*)&(points[1]);
+    const double* x2 = (double*)&(points[2]);
+    const double* x3 = (double*)&(points[3]);
+
+    // Formula for volume from http://mathworld.wolfram.com
+    // I see this formula in /dolfin/mesh/TetrahedronCell.cpp which is a part of fenics.
+    const double v = (x0[0]*(x1[1]*x2[2] + x3[1]*x1[2] + x2[1]*x3[2]
+                           - x2[1]*x1[2] - x1[1]*x3[2] - x3[1]*x2[2])
+                    - x1[0]*(x0[1]*x2[2] + x3[1]*x0[2] + x2[1]*x3[2]
+                             - x2[1]*x0[2] - x0[1]*x3[2] - x3[1]*x2[2])
+                    + x2[0]*(x0[1]*x1[2] + x3[1]*x0[2] + x1[1]*x3[2]
+                             - x1[1]*x0[2] - x0[1]*x3[2] - x3[1]*x1[2]) -
+                    x3[0]*(x0[1]*x1[2] + x1[1]*x2[2] + x2[1]*x0[2]
+                           - x1[1]*x0[2] - x2[1]*x1[2] - x0[1]*x2[2]));
+
+  return std::abs(v)/6.0;
+}
+
+
 
 int main(){
     double3* points = (double3*)my_tetrahedron_vertices;
     int4 cell = {0,1,2,3};
     int3 boundary = {0,3,5000};
     /// 1. calculate the volumes
+    double volume = tetrahedron_volume(points);
 
-    /// 2. calculate the normal
-    int3 face = {0,2,3};
+    /// 2. calculate the out normal
     double3 normal = triangle_normal(points,boundary.y);
 
-    
+    printf("volume : %f\n", volume);
     printf("%f   %f   %f\n",normal.x, normal.y, normal.z);
     return 0;
 }
